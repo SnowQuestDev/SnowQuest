@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SnowQuest.net — Game Dev · Software · Hosting</title>
+  <meta name="description" content="SnowQuest is a New York-based creative technology company encompassing game development, software solutions, server hosting, and content creation." />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    /* ====== Variables ====== */
+    :root {
+      --bg-base:     #07101e;
+      --bg-nav:      rgba(7, 16, 30, 0.92);
+      --bg-surface:  #0f1e35;
+      --bg-card:     #111e38;
+      --accent-blue: #5ba3e8;
+      --accent-silver: #a8c0d8;
+      --accent-glow: rgba(91, 163, 232, 0.12);
+      --text-primary:   #e8f2fc;
+      --text-secondary: #7a9cb8;
+      --text-muted:     #465e78;
+      --border:        rgba(91, 163, 232, 0.1);
+      --border-silver: rgba(168, 192, 216, 0.18);
+      --radius:    12px;
+      --radius-sm: 8px;
+    }
+
+    /* ====== Reset ====== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg-base);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    img { max-width: 100%; display: block; }
+    a { color: inherit; text-decoration: none; }
+
+    /* ====== Snowflakes ====== */
+    .snowflakes {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .sf {
+      position: absolute;
+      top: -24px;
+      color: var(--accent-silver);
+      opacity: 0;
+      user-select: none;
+      animation: snowfall linear infinite;
+    }
+    @keyframes snowfall {
+      0%   { transform: translateY(-24px) rotate(0deg);    opacity: 0; }
+      8%   { opacity: 0.35; }
+      92%  { opacity: 0.12; }
+      100% { transform: translateY(100vh) rotate(380deg);  opacity: 0; }
+    }
+    .sf:nth-child(1)  { left:4%;  font-size:.75rem; animation-duration:13s; animation-delay:0s;  }
+    .sf:nth-child(2)  { left:10%; font-size:1.1rem; animation-duration:16s; animation-delay:2s;  }
+    .sf:nth-child(3)  { left:22%; font-size:.65rem; animation-duration:11s; animation-delay:5s;  }
+    .sf:nth-child(4)  { left:33%; font-size:.9rem;  animation-duration:18s; animation-delay:1s;  }
+    .sf:nth-child(5)  { left:47%; font-size:.8rem;  animation-duration:14s; animation-delay:7s;  }
+    .sf:nth-child(6)  { left:58%; font-size:1.2rem; animation-duration:17s; animation-delay:3s;  }
+    .sf:nth-child(7)  { left:66%; font-size:.7rem;  animation-duration:12s; animation-delay:9s;  }
+    .sf:nth-child(8)  { left:74%; font-size:1rem;   animation-duration:15s; animation-delay:4s;  }
+    .sf:nth-child(9)  { left:83%; font-size:.78rem; animation-duration:13s; animation-delay:6s;  }
+    .sf:nth-child(10) { left:92%; font-size:.95rem; animation-duration:19s; animation-delay:8s;  }
+    .sf:nth-child(11) { left:27%; font-size:.6rem;  animation-duration:14s; animation-delay:11s; }
+    .sf:nth-child(12) { left:79%; font-size:.85rem; animation-duration:16s; animation-delay:13s; }
+
+    /* ====== Utility ====== */
+    section { position: relative; z-index: 1; }
+    .container { max-width: 1140px; margin: 0 auto; padding: 0 2rem; }
+    .section-label {
+      font-family: 'Sora', sans-serif;
+      font-size: .7rem;
+      font-weight: 600;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--accent-blue);
+      margin-bottom: .75rem;
+    }
+    .section-title {
+      font-family: 'Sora', sans-serif;
+      font-size: clamp(1.8rem, 3vw, 2.6rem);
+      font-weight: 700;
+      line-height: 1.18;
+      color: var(--text-primary);
+      margin-bottom: 1rem;
+    }
+    .section-sub {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      max-width: 560px;
+      line-height: 1.72;
+      margin-bottom: 3rem;
+    }
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border-silver), transparent);
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ====== Reveal animation ====== */
+    .reveal {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity .6s ease, transform .6s ease;
+    }
+    .reveal.visible { opacity: 1; transform: none; }
+    .reveal-delay-1 { transition-delay: .1s; }
+    .reveal-delay-2 { transition-delay: .2s; }
+    .reveal-delay-3 { transition-delay: .3s; }
+    .reveal-delay-4 { transition-delay: .4s; }
+
+    /* ====== Nav ====== */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: var(--bg-nav);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: border-color .3s;
+    }
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: .7rem;
+    }
+    .nav-logo img { height: 42px; width: auto; }
+    .nav-logo-text {
+      font-family: 'Sora', sans-serif;
+      font-weight: 700;
+      font-size: 1.05rem;
+      letter-spacing: .1em;
+      color: var(--text-primary);
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      list-style: none;
+    }
+    .nav-links a {
+      font-size: .84rem;
+      font-weight: 500;
+      letter-spacing: .04em;
+      color: var(--text-secondary);
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--text-primary); }
+    .nav-cta {
+      background: var(--accent-blue) !important;
+      color: #07101e !important;
+      padding: .42rem 1.1rem;
+      border-radius: 6px;
+      font-weight: 600 !important;
+      transition: opacity .2s, transform .2s !important;
+    }
+    .nav-cta:hover { opacity: .88; transform: translateY(-1px); }
+    .nav-hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 4px;
+    }
+    .nav-hamburger span {
+      display: block;
+      width: 24px; height: 2px;
+      background: var(--text-primary);
+      border-radius: 2px;
+      transition: all .3s;
+    }
+
+    /* ====== Hero ====== */
+    #hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding-top: 64px;
+      background:
+        radial-gradient(ellipse 80% 55% at 50% -10%, rgba(91,163,232,.09) 0%, transparent 70%),
+        radial-gradient(ellipse 35% 35% at 85% 85%, rgba(91,163,232,.04) 0%, transparent 60%),
+        var(--bg-base);
+    }
+    .hero-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+      padding: 5rem 0 5rem;
+    }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      background: var(--accent-glow);
+      border: 1px solid rgba(91,163,232,.22);
+      border-radius: 100px;
+      padding: .28rem .9rem;
+      font-size: .72rem;
+      font-weight: 500;
+      letter-spacing: .07em;
+      color: var(--accent-blue);
+      margin-bottom: 1.5rem;
+    }
+    .hero-eyebrow::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: var(--accent-blue);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity:1; transform:scale(1); }
+      50%      { opacity:.35; transform:scale(.75); }
+    }
+    .hero-title {
+      font-family: 'Sora', sans-serif;
+      font-size: clamp(2.4rem, 4.5vw, 3.8rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -.025em;
+      margin-bottom: 1.5rem;
+    }
+    .grad {
+      background: linear-gradient(130deg, #8ac4f0 0%, #5ba3e8 40%, #c0d6ec 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-desc {
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      line-height: 1.76;
+      margin-bottom: 2.5rem;
+      max-width: 470px;
+    }
+    .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: .45rem;
+      background: var(--accent-blue);
+      color: #07101e;
+      font-family: 'Sora', sans-serif;
+      font-size: .88rem;
+      font-weight: 600;
+      padding: .75rem 1.75rem;
+      border-radius: var(--radius-sm);
+      letter-spacing: .03em;
+      transition: transform .2s, box-shadow .2s;
+      box-shadow: 0 4px 22px rgba(91,163,232,.3);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(91,163,232,.45); }
+    .btn-outline {
+      display: inline-flex;
+      align-items: center;
+      gap: .45rem;
+      background: transparent;
+      color: var(--accent-silver);
+      font-family: 'Sora', sans-serif;
+      font-size: .88rem;
+      font-weight: 500;
+      padding: .75rem 1.75rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-silver);
+      letter-spacing: .03em;
+      transition: background .2s, border-color .2s;
+    }
+    .btn-outline:hover { background: rgba(168,192,216,.07); border-color: var(--accent-silver); }
+    .hero-stats {
+      display: flex;
+      gap: 2.5rem;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+    .hero-stat-value {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.65rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .hero-stat-label {
+      font-size: .74rem;
+      color: var(--text-muted);
+      letter-spacing: .05em;
+      margin-top: .1rem;
+    }
+    .hero-visual {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .logo-wrap { position: relative; display: inline-block; }
+    .logo-wrap img {
+      width: 320px;
+      max-width: 100%;
+      filter: drop-shadow(0 0 44px rgba(91,163,232,.38));
+      animation: float 6s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-13px); }
+    }
+    .logo-ring {
+      position: absolute;
+      inset: -20px;
+      border-radius: 50%;
+      border: 1px solid rgba(91,163,232,.18);
+      animation: spin-slow 22s linear infinite;
+      pointer-events: none;
+    }
+    .logo-ring::before {
+      content: '❄';
+      position: absolute;
+      top: -9px; left: 50%;
+      transform: translateX(-50%);
+      font-size: 13px;
+      color: var(--accent-blue);
+    }
+    @keyframes spin-slow {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    /* ====== Services ====== */
+    #services {
+      padding: 6rem 0;
+      background: linear-gradient(180deg, var(--bg-base) 0%, var(--bg-surface) 100%);
+    }
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.4rem;
+    }
+    .service-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+      transition: border-color .3s, transform .3s, box-shadow .3s;
+    }
+    .service-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent-blue), transparent);
+      opacity: 0;
+      transition: opacity .3s;
+    }
+    .service-card:hover { border-color: rgba(91,163,232,.28); transform: translateY(-4px); box-shadow: 0 14px 44px rgba(0,0,0,.3); }
+    .service-card:hover::before { opacity: 1; }
+    .service-icon { font-size: 2rem; margin-bottom: 1.2rem; display: block; }
+    .service-name {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: .7rem;
+    }
+    .service-desc { font-size: .88rem; color: var(--text-secondary); line-height: 1.68; }
+
+    /* ====== Games ====== */
+    #games {
+      padding: 6rem 0;
+      background: var(--bg-surface);
+    }
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.4rem;
+    }
+    .game-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: transform .3s, box-shadow .3s, border-color .3s;
+    }
+    .game-card:hover { transform: translateY(-6px); box-shadow: 0 20px 52px rgba(0,0,0,.4); border-color: rgba(91,163,232,.28); }
+    .game-thumb {
+      height: 200px;
+      background: linear-gradient(135deg, #0d1a35 0%, #1e3260 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 4rem;
+    }
+    .game-body { padding: 1.5rem; }
+    .game-status {
+      display: inline-block;
+      font-size: .68rem; font-weight: 600;
+      letter-spacing: .12em; text-transform: uppercase;
+      padding: .2rem .6rem;
+      border-radius: 4px;
+      margin-bottom: .75rem;
+    }
+    .status-released  { background: rgba(72,199,142,.13); color: #48c78e; border: 1px solid rgba(72,199,142,.28); }
+    .status-soon      { background: rgba(91,163,232,.1);  color: var(--accent-blue); border: 1px solid rgba(91,163,232,.22); }
+    .game-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.2rem; font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: .5rem;
+    }
+    .game-desc { font-size: .87rem; color: var(--text-secondary); line-height: 1.62; margin-bottom: 1.2rem; }
+    .game-tags { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: 1.2rem; }
+    .tag {
+      font-size: .68rem; color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: 4px; padding: .12rem .5rem;
+    }
+    .game-link {
+      display: inline-flex; align-items: center; gap: .4rem;
+      font-size: .84rem; font-weight: 600;
+      color: var(--accent-blue);
+      font-family: 'Sora', sans-serif;
+      transition: gap .2s;
+    }
+    .game-link:hover { gap: .65rem; }
+    .placeholder-card { opacity: .5; border-style: dashed; }
+
+    /* ====== Twitch ====== */
+    #twitch {
+      padding: 6rem 0;
+      background: linear-gradient(180deg, var(--bg-surface) 0%, #090e28 100%);
+    }
+    .twitch-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+    .twitch-pill {
+      display: inline-flex; align-items: center; gap: .5rem;
+      background: rgba(145,70,255,.12);
+      border: 1px solid rgba(145,70,255,.28);
+      border-radius: 100px;
+      padding: .28rem .9rem;
+      font-size: .72rem; font-weight: 600; letter-spacing: .07em;
+      color: #a970ff;
+      margin-bottom: 1.5rem;
+    }
+    .twitch-pill::before { content: '●'; font-size: .55rem; animation: pulse 1.5s ease-in-out infinite; }
+    .twitch-handle {
+      font-family: 'Sora', sans-serif;
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: .6rem;
+    }
+    .twitch-handle span { color: #a970ff; }
+    .twitch-sub { font-size: .95rem; color: var(--text-secondary); line-height: 1.72; margin-bottom: 1rem; }
+    .twitch-btn {
+      display: inline-flex; align-items: center; gap: .6rem;
+      background: #9146ff;
+      color: #fff;
+      font-family: 'Sora', sans-serif;
+      font-size: .88rem; font-weight: 600;
+      padding: .78rem 1.75rem;
+      border-radius: var(--radius-sm);
+      transition: transform .2s, box-shadow .2s;
+      box-shadow: 0 4px 22px rgba(145,70,255,.3);
+      margin-top: 1rem;
+    }
+    .twitch-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(145,70,255,.44); }
+    .twitch-card {
+      background: #0b1228;
+      border: 1px solid rgba(145,70,255,.18);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .twitch-card-header {
+      background: linear-gradient(135deg, #160832 0%, #0a0f2e 100%);
+      padding: 1.2rem 1.5rem;
+      display: flex; align-items: center; gap: .75rem;
+      border-bottom: 1px solid rgba(145,70,255,.12);
+    }
+    .twitch-avatar {
+      width: 42px; height: 42px; border-radius: 50%;
+      background: linear-gradient(135deg, #9146ff, #6441a5);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; flex-shrink: 0;
+    }
+    .twitch-card-name { font-family: 'Sora', sans-serif; font-size: .95rem; font-weight: 700; color: var(--text-primary); }
+    .twitch-card-sub  { font-size: .7rem; color: #a970ff; margin-top: .15rem; }
+    .twitch-preview {
+      padding: 2.5rem 1.5rem;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: .75rem; text-align: center;
+    }
+    .twitch-preview-icon { font-size: 3rem; }
+    .twitch-preview-text { font-size: .84rem; color: var(--text-muted); line-height: 1.5; }
+    .twitch-card-footer {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid rgba(145,70,255,.1);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .twitch-stat { font-size: .76rem; color: var(--text-muted); }
+    .twitch-stat strong {
+      display: block;
+      font-family: 'Sora', sans-serif;
+      font-size: .9rem;
+      color: var(--text-primary);
+      margin-bottom: .1rem;
+    }
+    .twitch-watch-link { font-size: .78rem; color: #a970ff; font-weight: 600; font-family: 'Sora', sans-serif; transition: opacity .2s; }
+    .twitch-watch-link:hover { opacity: .75; }
+
+    /* ====== Blog ====== */
+    #blog {
+      padding: 6rem 0;
+      background: var(--bg-base);
+    }
+    .blog-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.4rem;
+    }
+    .blog-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: transform .3s, border-color .3s;
+    }
+    .blog-card:hover { transform: translateY(-4px); border-color: rgba(91,163,232,.22); }
+    .blog-thumb {
+      height: 140px;
+      background: linear-gradient(135deg, #0d1a35 0%, #1a2e50 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.5rem;
+    }
+    .blog-body { padding: 1.25rem; }
+    .blog-date { font-size: .7rem; color: var(--text-muted); letter-spacing: .08em; margin-bottom: .5rem; }
+    .blog-title {
+      font-family: 'Sora', sans-serif;
+      font-size: .94rem; font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.38;
+      margin-bottom: .55rem;
+    }
+    .blog-excerpt { font-size: .82rem; color: var(--text-secondary); line-height: 1.62; margin-bottom: 1rem; }
+    .blog-more { font-size: .76rem; font-weight: 600; color: var(--accent-blue); font-family: 'Sora', sans-serif; letter-spacing: .05em; transition: opacity .2s; }
+    .blog-more:hover { opacity: .75; }
+
+    /* ====== Contact ====== */
+    #contact {
+      padding: 6rem 0;
+      background: linear-gradient(180deg, var(--bg-base) 0%, var(--bg-surface) 100%);
+    }
+    .contact-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: start;
+    }
+    .contact-links { display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem; }
+    .contact-link-item {
+      display: flex; align-items: center; gap: 1rem;
+      padding: 1rem 1.25rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      transition: border-color .2s, transform .2s;
+    }
+    .contact-link-item:hover { border-color: rgba(91,163,232,.28); transform: translateX(3px); }
+    .contact-link-icon { font-size: 1.2rem; flex-shrink: 0; }
+    .contact-link-label { font-size: .72rem; color: var(--text-muted); margin-bottom: .1rem; letter-spacing: .05em; }
+    .contact-link-value { font-size: .88rem; font-weight: 500; color: var(--text-primary); }
+    .contact-form {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+    }
+    .form-group { margin-bottom: 1.2rem; }
+    .form-label {
+      display: block;
+      font-size: .72rem; font-weight: 500;
+      letter-spacing: .08em;
+      color: var(--text-secondary);
+      margin-bottom: .45rem;
+      font-family: 'Sora', sans-serif;
+    }
+    .form-input, .form-textarea {
+      width: 100%;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: .72rem 1rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .9rem;
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+      -webkit-appearance: none;
+    }
+    .form-input::placeholder, .form-textarea::placeholder { color: var(--text-muted); }
+    .form-input:focus, .form-textarea:focus {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 3px rgba(91,163,232,.1);
+    }
+    .form-textarea { min-height: 120px; resize: vertical; }
+    .form-submit {
+      width: 100%;
+      background: var(--accent-blue);
+      color: var(--bg-base);
+      font-family: 'Sora', sans-serif;
+      font-size: .9rem; font-weight: 600;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: .85rem;
+      cursor: pointer;
+      letter-spacing: .04em;
+      transition: transform .2s, box-shadow .2s, background .2s, color .2s;
+    }
+    .form-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 22px rgba(91,163,232,.32); }
+    .form-submit:disabled { cursor: not-allowed; }
+    .form-notice { font-size: .73rem; color: var(--text-muted); margin-top: .75rem; text-align: center; line-height: 1.5; }
+
+    /* ====== Footer ====== */
+    footer {
+      background: #040b14;
+      border-top: 1px solid var(--border);
+      padding: 3rem 0 2rem;
+      position: relative; z-index: 1;
+    }
+    .footer-inner {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 3rem;
+      margin-bottom: 2.5rem;
+    }
+    .footer-logo { height: 48px; margin-bottom: 1rem; }
+    .footer-desc {
+      font-size: .84rem;
+      color: var(--text-muted);
+      line-height: 1.66;
+      max-width: 280px;
+      margin-bottom: 1.25rem;
+    }
+    .footer-legal { font-size: .72rem; color: var(--text-muted); line-height: 1.65; }
+    .footer-col-title {
+      font-family: 'Sora', sans-serif;
+      font-size: .72rem; font-weight: 600;
+      letter-spacing: .14em; text-transform: uppercase;
+      color: var(--text-secondary);
+      margin-bottom: 1.2rem;
+    }
+    .footer-links { list-style: none; display: flex; flex-direction: column; gap: .55rem; }
+    .footer-links a { font-size: .84rem; color: var(--text-muted); transition: color .2s; }
+    .footer-links a:hover { color: var(--text-secondary); }
+    .footer-badge {
+      display: inline-flex; align-items: center; gap: .4rem;
+      font-size: .7rem; color: var(--accent-blue);
+      background: var(--accent-glow);
+      border: 1px solid rgba(91,163,232,.18);
+      border-radius: 4px;
+      padding: .2rem .6rem;
+      margin-top: 1.4rem;
+    }
+    .footer-bottom {
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .footer-copy { font-size: .76rem; color: var(--text-muted); }
+    .footer-domain { font-size: .76rem; color: var(--accent-blue); }
+
+    /* ====== Responsive ====== */
+    @media (max-width: 900px) {
+      .blog-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .nav-hamburger { display: flex; }
+      .nav-links.open {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        top: 64px; left: 0; right: 0;
+        background: #07101e;
+        border-bottom: 1px solid var(--border);
+        padding: 1.5rem 2rem;
+        gap: 1.25rem;
+      }
+      .hero-inner { grid-template-columns: 1fr; gap: 3rem; }
+      .hero-visual { order: -1; }
+      .logo-wrap img { width: 200px; }
+      .hero-stats { gap: 1.5rem; }
+      .services-grid { grid-template-columns: 1fr; }
+      .twitch-inner { grid-template-columns: 1fr; gap: 2.5rem; }
+      .blog-grid { grid-template-columns: 1fr; }
+      .contact-inner { grid-template-columns: 1fr; gap: 2.5rem; }
+      .footer-inner { grid-template-columns: 1fr; gap: 2rem; }
+      .footer-bottom { flex-direction: column; align-items: flex-start; }
+    }
+    @media (max-width: 480px) {
+      .hero-actions { flex-direction: column; }
+      .btn-primary, .btn-outline { width: 100%; justify-content: center; }
+      .hero-stats { gap: 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Ambient snowflakes -->
+<div class="snowflakes" aria-hidden="true">
+  <div class="sf">❄</div><div class="sf">❅</div><div class="sf">❄</div>
+  <div class="sf">❅</div><div class="sf">❄</div><div class="sf">❅</div>
+  <div class="sf">❄</div><div class="sf">❅</div><div class="sf">❄</div>
+  <div class="sf">❅</div><div class="sf">❄</div><div class="sf">❅</div>
+</div>
+
+<!-- ====== Navigation ====== -->
+<nav id="navbar">
+  <a href="#hero" class="nav-logo">
+    <img src="SnowQuest.png" alt="SnowQuest Logo" />
+    <span class="nav-logo-text">SNOWQUEST</span>
+  </a>
+  <ul class="nav-links" id="nav-links">
+    <li><a href="#services">Services</a></li>
+    <li><a href="#games">Games</a></li>
+    <li><a href="#twitch">Twitch</a></li>
+    <li><a href="#blog">Blog</a></li>
+    <li><a href="#contact" class="nav-cta">Contact Us</a></li>
+  </ul>
+  <button class="nav-hamburger" id="hamburger" aria-label="Toggle navigation">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- ====== Hero ====== -->
+<section id="hero">
+  <div class="container">
+    <div class="hero-inner">
+      <div>
+        <div class="hero-eyebrow reveal">Coming Soon — SnowQuest.net LLC &nbsp;·&nbsp; Est. September 2026</div>
+        <h1 class="hero-title reveal reveal-delay-1">
+          Building Worlds.<br />
+          <span class="grad">Writing Code.</span><br />
+          Hosting Adventures.
+        </h1>
+        <p class="hero-desc reveal reveal-delay-2">
+          SnowQuest is a New York–based creative technology company encompassing game development, software solutions, server hosting, and content creation. We craft experiences worth exploring.
+        </p>
+        <div class="hero-actions reveal reveal-delay-3">
+          <a href="#games" class="btn-primary">Explore Our Games ↓</a>
+          <a href="#services" class="btn-outline">Our Services</a>
+        </div>
+        <div class="hero-stats reveal reveal-delay-4">
+          <div>
+            <div class="hero-stat-value">1</div>
+            <div class="hero-stat-label">Game Released</div>
+          </div>
+          <div>
+            <div class="hero-stat-value">4</div>
+            <div class="hero-stat-label">Services Offered</div>
+          </div>
+          <div>
+            <div class="hero-stat-value">∞</div>
+            <div class="hero-stat-label">Quests Ahead</div>
+          </div>
+        </div>
+      </div>
+      <div class="hero-visual reveal reveal-delay-2">
+        <div class="logo-wrap">
+          <div class="logo-ring"></div>
+          <img src="SnowQuest.png" alt="SnowQuest" />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ====== Services ====== -->
+<section id="services">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">What We Do</div>
+      <h2 class="section-title">A Full Spectrum of<br />Digital Craftsmanship</h2>
+      <p class="section-sub">From indie games to enterprise software, SnowQuest brings the same dedication to craft across every service we offer.</p>
+    </div>
+    <div class="services-grid">
+      <div class="service-card reveal reveal-delay-1">
+        <span class="service-icon">🎮</span>
+        <div class="service-name">Game Development</div>
+        <p class="service-desc">We build indie games with atmosphere, intention, and polish. Currently working in Unity, our titles range from atmospheric decision games to action adventures — each one a focused, replayable experience built from the ground up.</p>
+      </div>
+      <div class="service-card reveal reveal-delay-2">
+        <span class="service-icon">💻</span>
+        <div class="service-name">Software Development</div>
+        <p class="service-desc">Custom software built to solve real problems. Whether it's web applications, internal tools, or full-stack systems — we design and ship software that works reliably and grows with your needs.</p>
+      </div>
+      <div class="service-card reveal reveal-delay-3">
+        <span class="service-icon">🖥️</span>
+        <div class="service-name">Game Server Hosting</div>
+        <p class="service-desc">Need a dedicated game server? We offer LAN and network-hosted game server solutions, managed and maintained with performance and uptime in mind. Availability and details coming soon — reach out to inquire.</p>
+      </div>
+      <div class="service-card reveal reveal-delay-4">
+        <span class="service-icon">📡</span>
+        <div class="service-name">Content Creation</div>
+        <p class="service-desc">Gaming content, live streaming, and community engagement through <strong style="color:#a970ff;">PikaPunchYou</strong> on Twitch. Interactive streams, game commentary, and community-driven content for gaming enthusiasts of all kinds.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ====== Games ====== -->
+<section id="games">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">Games &amp; Projects</div>
+      <h2 class="section-title">From the SnowQuest Studio</h2>
+      <p class="section-sub">Each title is built with intent — focused, atmospheric, and worth your time.</p>
+    </div>
+    <div class="games-grid">
+
+      <!-- Soul Warden -->
+      <div class="game-card reveal reveal-delay-1">
+        <div class="game-thumb">⚖️</div>
+        <div class="game-body">
+          <span class="game-status status-released">Released</span>
+          <div class="game-title">Soul Warden</div>
+          <p class="game-desc">You are the Soul Warden. Souls arrive before you — one by one. Weigh their fragments. Decide their fate. <em>Save… or Damn.</em> A dark, atmospheric decision game built around fast moral judgment under pressure. No rewind. No deliberation.</p>
+          <div class="game-tags">
+            <span class="tag">Unity</span>
+            <span class="tag">HTML5</span>
+            <span class="tag">Atmospheric</span>
+            <span class="tag">Minimalist</span>
+            <span class="tag">Horror</span>
+            <span class="tag">Game Jam Entry</span>
+          </div>
+          <a href="https://snowquest.itch.io/soul-warden" target="_blank" rel="noopener" class="game-link">Play on itch.io →</a>
+        </div>
+      </div>
+
+      <!-- Placeholder -->
+      <div class="game-card placeholder-card reveal reveal-delay-2">
+        <div class="game-thumb">🔮</div>
+        <div class="game-body">
+          <span class="game-status status-soon">Coming Soon</span>
+          <div class="game-title">Next Quest</div>
+          <p class="game-desc">Something new is brewing in the SnowQuest studio. Follow us or subscribe for updates — our next project is in early development.</p>
+          <div class="game-tags">
+            <span class="tag">In Development</span>
+            <span class="tag">TBA</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ====== Twitch ====== -->
+<section id="twitch">
+  <div class="container">
+    <div class="twitch-inner">
+      <div class="reveal">
+        <div class="twitch-pill">Live on Twitch</div>
+        <div class="twitch-handle">Meet <span>PikaPunchYou</span></div>
+        <p class="twitch-sub">Join the SnowQuest family on Twitch! PikaPunchYou delivers gaming content, live streams, and an interactive community experience — a core part of what makes SnowQuest a multifaceted creative home.</p>
+        <p class="twitch-sub">Catch live gameplay, community events, and the occasional surprise drop. Hit that follow button and be part of the quest.</p>
+        <a href="https://www.twitch.tv/PikaPunchYou" target="_blank" rel="noopener" class="twitch-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/></svg>
+          Follow PikaPunchYou on Twitch
+        </a>
+      </div>
+
+      <div class="twitch-card reveal reveal-delay-2">
+        <div class="twitch-card-header">
+          <div class="twitch-avatar">🎮</div>
+          <div>
+            <div class="twitch-card-name">PikaPunchYou</div>
+            <div class="twitch-card-sub">SnowQuest · Content Creator</div>
+          </div>
+        </div>
+        <div class="twitch-preview">
+          <div class="twitch-preview-icon">📺</div>
+          <div class="twitch-preview-text">Live streams, gaming content,<br />and community events on Twitch</div>
+        </div>
+        <div class="twitch-card-footer">
+          <div class="twitch-stat">
+            <strong>twitch.tv/PikaPunchYou</strong>
+            Gaming &amp; Content Creation
+          </div>
+          <a href="https://www.twitch.tv/PikaPunchYou" target="_blank" rel="noopener" class="twitch-watch-link">Watch →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ====== Blog ====== -->
+<section id="blog">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">News &amp; Updates</div>
+      <h2 class="section-title">From the SnowQuest Blog</h2>
+      <p class="section-sub">Development diaries, studio news, and updates from across the SnowQuest universe.</p>
+    </div>
+    <div class="blog-grid">
+
+      <div class="blog-card reveal reveal-delay-1">
+        <div class="blog-thumb">⚖️</div>
+        <div class="blog-body">
+          <div class="blog-date">APRIL 2026 · GAME DEV</div>
+          <div class="blog-title">Soul Warden Released — Our First Game Jam Entry</div>
+          <p class="blog-excerpt">We're thrilled to share our first published title, born from the Game Dev Field Trip Minigame Jam #1. A behind-the-scenes look at what we built and why.</p>
+          <a href="https://snowquest.itch.io/soul-warden" target="_blank" rel="noopener" class="blog-more">READ MORE →</a>
+        </div>
+      </div>
+
+      <div class="blog-card reveal reveal-delay-2">
+        <div class="blog-thumb">🏢</div>
+        <div class="blog-body">
+          <div class="blog-date">COMING SOON · COMPANY NEWS</div>
+          <div class="blog-title">SnowQuest is Forming as a New York LLC This Fall</div>
+          <p class="blog-excerpt">SnowQuest officially registers as a multi-member New York LLC in September 2026. Learn what that means for our projects, clients, and the community.</p>
+          <a href="#contact" class="blog-more">STAY IN THE LOOP →</a>
+        </div>
+      </div>
+
+      <div class="blog-card reveal reveal-delay-3">
+        <div class="blog-thumb">🚀</div>
+        <div class="blog-body">
+          <div class="blog-date">UPCOMING · STUDIO NEWS</div>
+          <div class="blog-title">What's Next for SnowQuest? A Studio Roadmap</div>
+          <p class="blog-excerpt">Big plans across game development, server hosting, and software services. Here's a preview of what we're working toward in the coming months.</p>
+          <a href="#contact" class="blog-more">GET NOTIFIED →</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ====== Contact ====== -->
+<section id="contact">
+  <div class="container">
+    <div class="contact-inner">
+      <div>
+        <div class="section-label reveal">Get In Touch</div>
+        <h2 class="section-title reveal reveal-delay-1">Let's Start a Quest Together</h2>
+        <p class="section-sub reveal reveal-delay-2">Whether you're interested in our services, want to collaborate, or just want to say hello — we'd love to hear from you.</p>
+        <div class="contact-links">
+          <a href="mailto:hello@snowquest.net" class="contact-link-item reveal reveal-delay-2">
+            <span class="contact-link-icon">✉️</span>
+            <div>
+              <div class="contact-link-label">EMAIL</div>
+              <div class="contact-link-value">hello@snowquest.net</div>
+            </div>
+          </a>
+          <a href="https://snowquest.itch.io" target="_blank" rel="noopener" class="contact-link-item reveal reveal-delay-3">
+            <span class="contact-link-icon">🎮</span>
+            <div>
+              <div class="contact-link-label">ITCH.IO</div>
+              <div class="contact-link-value">snowquest.itch.io</div>
+            </div>
+          </a>
+          <a href="https://www.twitch.tv/PikaPunchYou" target="_blank" rel="noopener" class="contact-link-item reveal reveal-delay-4">
+            <span class="contact-link-icon">📡</span>
+            <div>
+              <div class="contact-link-label">TWITCH</div>
+              <div class="contact-link-value">twitch.tv/PikaPunchYou</div>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <div class="contact-form reveal reveal-delay-2">
+        <div class="form-group">
+          <label class="form-label">YOUR NAME</label>
+          <input type="text" class="form-input" placeholder="Your name" id="f-name" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">EMAIL ADDRESS</label>
+          <input type="email" class="form-input" placeholder="you@example.com" id="f-email" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">SUBJECT</label>
+          <input type="text" class="form-input" placeholder="Game dev inquiry, server hosting, etc." id="f-subject" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">MESSAGE</label>
+          <textarea class="form-textarea" placeholder="Tell us about your project or inquiry..." id="f-message"></textarea>
+        </div>
+        <button class="form-submit" id="form-btn" onclick="handleSubmit()">Send Message</button>
+        <p class="form-notice" id="form-notice">⚠️ Form backend coming soon — please email us directly at <a href="mailto:hello@snowquest.net" style="color:var(--accent-blue);">hello@snowquest.net</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== Footer ====== -->
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <div>
+        <img src="SnowQuest.png" alt="SnowQuest" class="footer-logo" />
+        <p class="footer-desc">SnowQuest is a New York–based creative technology company encompassing game development, software, server hosting, and content creation.</p>
+        <p class="footer-legal">
+          SnowQuest LLC — Pending official registration, September 2026<br />
+          New York, United States<br />
+          Founded by Dakota Snow
+        </p>
+        <div class="footer-badge">⏳ LLC Registration — Sept 2026</div>
+      </div>
+      <div>
+        <div class="footer-col-title">Navigate</div>
+        <ul class="footer-links">
+          <li><a href="#hero">Home</a></li>
+          <li><a href="#services">Services</a></li>
+          <li><a href="#games">Games</a></li>
+          <li><a href="#twitch">Twitch</a></li>
+          <li><a href="#blog">Blog</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Connect</div>
+        <ul class="footer-links">
+          <li><a href="https://snowquest.itch.io" target="_blank" rel="noopener">itch.io — snowquest</a></li>
+          <li><a href="https://www.twitch.tv/PikaPunchYou" target="_blank" rel="noopener">Twitch — PikaPunchYou</a></li>
+          <li><a href="mailto:hello@snowquest.net">hello@snowquest.net</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p class="footer-copy">© 2026 SnowQuest. All rights reserved. SnowQuest.net LLC is pending official registration.</p>
+      <p class="footer-domain">snowquest.net</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Mobile nav
+  const hamburger = document.getElementById('hamburger');
+  const navLinks  = document.getElementById('nav-links');
+  hamburger.addEventListener('click', () => navLinks.classList.toggle('open'));
+  navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => navLinks.classList.remove('open')));
+
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => observer.observe(el));
+
+  // Trigger hero immediately on load
+  document.querySelectorAll('#hero .reveal').forEach((el, i) => {
+    setTimeout(() => el.classList.add('visible'), 80 + i * 110);
+  });
+
+  // Nav scroll style
+  window.addEventListener('scroll', () => {
+    document.getElementById('navbar').style.borderBottomColor =
+      window.scrollY > 20 ? 'rgba(91,163,232,.18)' : 'rgba(91,163,232,.08)';
+  });
+
+  // Contact form (placeholder — no backend)
+  function handleSubmit() {
+    const btn    = document.getElementById('form-btn');
+    const notice = document.getElementById('form-notice');
+    btn.textContent = '✉️ Email us directly — form backend coming soon!';
+    btn.style.background = 'rgba(91,163,232,.15)';
+    btn.style.color = 'var(--accent-blue)';
+    btn.disabled = true;
+    notice.style.color = 'var(--accent-blue)';
+  }
+</script>
+</body>
+</html>
